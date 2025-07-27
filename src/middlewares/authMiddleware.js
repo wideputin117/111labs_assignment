@@ -1,4 +1,3 @@
-import Associated_Member from "../models/AssociatedMembers.js";
 import { User } from "../models/User.js";
 import ApiError from "../utils/error/ApiError.js";
 import { asyncHandler } from "../utils/error/asyncHandler.js";
@@ -21,16 +20,7 @@ export const authenticateToken = asyncHandler(async (req, res, next) => {
   }
 
   let user = null
-  if (decoded?.role == "ASSOCIATED_MEMBER"){
-      user = await Associated_Member.findById({
-        _id: decoded?._id
-      }).select("-password, -refresh_token")
-  } else {
-    user = await User.findById(decoded._id).select("-password -refreshToken");
-  }
-  if (!user) {
-    return next(new ApiError("Invalid access token!", 401));
-  }
+  user = await User.findById(decoded._id).select("-password -refreshToken");
   req.user = user;
   next();
 });
