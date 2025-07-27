@@ -10,26 +10,20 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// Function to handle single or multiple file uploads
-export const uploadFileToCloudinary = async (files, folderName = "default") => {
+ export const uploadFileToCloudinary = async (files, folderName = "default") => {
   try {
-    // Ensure files is always an array for uniform processing
-    const fileArray = Array.isArray(files) ? files : [files];
+     const fileArray = Array.isArray(files) ? files : [files];
 
-    // Map each file to the upload function
-    const uploadPromises = fileArray.map((file) =>
+     const uploadPromises = fileArray.map((file) =>
       cloudinary.uploader.upload(file.path, {
-        folder: `page_pop/${folderName}`, // Specify dynamic folder path
+        folder: `page_pop/${folderName}`,  
       })
     );
 
-    // Wait for all promises (uploads) to complete
-    const uploadResults = await Promise.all(uploadPromises);
+     const uploadResults = await Promise.all(uploadPromises);
 
-    // Map and return only the necessary details from the upload results
-    return uploadResults.map((result) => ({
-      // [{}]-> for one file, [{},{}]=> for multiple file
-      secure_url: result.secure_url,
+     return uploadResults.map((result) => ({
+       secure_url: result.secure_url,
       public_id: result.public_id,
     }));
   } catch (error) {
@@ -85,44 +79,5 @@ export const deleteFileFromCloudinary = async (files) => {
   }
 };
 
-// Function to handle file upload stream
-// export const uploadFileToCloudinary = async (files, folderName = "default") => {
-//   console.log("files: ", files);
-//   try {
-//     // Ensure files is always an array for uniform processing
-//     const fileArray = Array.isArray(files) ? files : [files];
-
-//     // Function to upload a single file
-//     const uploadSingleFile = (file) => {
-//       return new Promise((resolve, reject) => {
-//         const stream = cloudinary.uploader.upload_stream(
-//           { folder: `R2M/${folderName}` },
-//           (error, result) => {
-//             if (error) {
-//               reject(error);
-//             } else {
-//               resolve({
-//                 secure_url: result.secure_url,
-//                 public_id: result.public_id,
-//               });
-//             }
-//           }
-//         );
-
-//         // Convert the file buffer into a readable stream and pipe it to Cloudinary
-//         Readable.from(file.buffer).pipe(stream);
-//       });
-//     };
-
-//     // Process all file uploads
-//     const uploadResults = await Promise.all(fileArray.map(uploadSingleFile));
-//     console.log(uploadResults);
-
-//     return uploadResults;
-//   } catch (error) {
-//     throw new Error(`File upload failed: ${error.message}`);
-//   }
-// };
-
-//Using upload_stream as data coming in buffer and we are not saving file to local disk
+ 
 export default cloudinary

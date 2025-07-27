@@ -5,7 +5,6 @@ import {
     fileURLToPath
 } from "url";
 
-// Define the sendMail function
 export const sendMail = async (to, subject, templateName, data) => {
     const __fileName = fileURLToPath(
         import.meta.url);
@@ -29,7 +28,7 @@ export const sendMail = async (to, subject, templateName, data) => {
     });
     // Email options
     const mailOptions = {
-        from: `Page Pops <${process.env.NODEMAILER_EMAIL_USER}>`,
+        from: `From <${process.env.NODEMAILER_EMAIL_USER}>`,
         to,
         subject,
         html,
