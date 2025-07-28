@@ -24,13 +24,15 @@ app.use(
                 "http://localhost:3000",
                 "http://localhost:3001",
                 "http://localhost:3002",
-                "https://i11-frontend.vercel.app"                
+                "https://i11-frontend.vercel.app",
+                "https://i11-frontend-frpi.vercel.app"                
 
             ] :
             [
                 "http://localhost:3000",
                 "http://localhost:3001",
-                "https://i11-frontend.vercel.app"
+                "https://i11-frontend.vercel.app",
+                "https://i11-frontend-frpi.vercel.app"
                 
             ],
         methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"], // Specify allowed HTTP methods
