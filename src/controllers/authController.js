@@ -24,7 +24,7 @@ export const signup_controller = asyncHandler(async(req, res, next)=>{
                 await OTP.findOneAndReplace(
                 { email, type: "REGISTER" },
                 { otp, email, type: "REGISTER" },
-                { upsert: true, new: true } // upsert: Creates a new document if no match is found., new: returns updated doc
+                { upsert: true, new: true }  
             );
 
             return res.status(200).json({
@@ -92,8 +92,7 @@ export const verifyOTP = asyncHandler(async (req, res, next) => {
         return next(new ApiError("Invalid OTP type", 400));
     }
 
-    // OTP is verified — remove it
-    await OTP.deleteOne({
+     await OTP.deleteOne({
         email,
         otp,
         type
@@ -122,8 +121,7 @@ export const login = asyncHandler(async (req, res, next) => {
     });
     if (!existingUser) return next(new ApiError("User not found", 400));
 
-    // Check if the user is verified (if necessary)
-    if (!existingUser.isVerified) {
+     if (!existingUser.isVerified) {
         return next(
             new ApiError("Please verify your email before logging in.", 403)
         );
