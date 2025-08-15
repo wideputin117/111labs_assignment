@@ -173,39 +173,110 @@ export const add_driver = asyncHandler(async(req, res, next)=>{
 })
 
 
-export const get_drivers=asyncHandler(async(req,res,next)=>{
-    const search = req.query.search || ""
-    const {page, limit, skip} = applyPagination(req.query)
+// export const get_drivers=asyncHandler(async(req,res,next)=>{
+//     const search = req.query.search || ""
+//     console.log("the search is", search)
+//     const {page, limit, skip} = applyPagination(req.query)
     
-    const regex = new RegExp(search, "i")
-    const query = search ? {
-        $or: [
-          { first_name: regex },
-          { last_name: regex },
-          { email: regex },
-          { mobile: regex },
-          { city: regex },
-          { state: regex },
-          { address1: regex },
-          { zipcode: regex },
-        ],
-      } : {}; 
+//     const regex = new RegExp(search, "i")
+//     const query = search ? {
+//         $or: [
+//           { first_name: regex },
+//           { last_name: regex },
+//           { email: regex },
+//           { mobile: regex },
+//           { city: regex },
+//           { state: regex },
+//           { address1: regex },
+//           { zipcode: regex },
+//         ],
+//       } : {}; 
 
-      const [data, total] = await Promise.all([Driver.find(query).skip(skip).limit(limit).sort({ createdAt : -1 }), Driver.countDocuments(query)]);
+//       const [data, total] = await Promise.all([Driver.find(query).skip(skip).limit(limit).sort({ createdAt : -1 }), Driver.countDocuments(query)]);
 
-      if(!data){
-        return next(new ApiError('No Data is found',404))
+//       if(!data){
+//         return next(new ApiError('No Data is found',404))
+//       }
+//       const pagination={
+//         total:total,
+//         totalPages:Math.ceil(total/limit),
+//         page:page,
+//         limit:limit
+//       }
+
+//       return res.status(200).json({message:"Drivers are fetched", data:data, paginate:pagination,success:true})
+// })
+
+export const get_drivers = asyncHandler(async (req, res, next) => {
+  const search = req.query.search || "";
+  console.log("the search is", search);
+  
+  const { page, limit, skip } = applyPagination(req.query);
+
+  const regex = new RegExp(search, "i");
+
+  let pipeline = [
+    {
+      $addFields: {
+        full_name: { $concat: ["$first_name", " ", "$last_name"] }
       }
-      const pagination={
-        total:total,
-        totalPages:Math.ceil(total/limit),
-        page:page,
-        limit:limit
-      }
+    },
+    {
+      $match: search
+        ? {
+            $or: [
+              { first_name: regex },
+              { last_name: regex },
+              { email: regex },
+              { mobile: regex },
+              { city: regex },
+              { state: regex },
+              { address1: regex },
+              { zipcode: regex },
+              { full_name: regex }, // <-- Match concatenated name
+            ]
+          }
+        : {}
+    },
+    { $sort: { createdAt: -1 } },
+    { $skip: skip },
+    { $limit: limit }
+  ];
 
-      return res.status(200).json({message:"Drivers are fetched", data:data, paginate:pagination,success:true})
-})
+  const [data, totalCount] = await Promise.all([
+    Driver.aggregate(pipeline),
+    Driver.countDocuments(search ? {
+      $or: [
+        { first_name: regex },
+        { last_name: regex },
+        { email: regex },
+        { mobile: regex },
+        { city: regex },
+        { state: regex },
+        { address1: regex },
+        { zipcode: regex },
+      ]
+    } : {})
+  ]);
 
+  if (!data || data.length === 0) {
+    return next(new ApiError("No Data is found", 404));
+  }
+
+  const pagination = {
+    total: totalCount,
+    totalPages: Math.ceil(totalCount / limit),
+    page,
+    limit
+  };
+
+  return res.status(200).json({
+    message: "Drivers are fetched",
+    data,
+    paginate: pagination,
+    success: true
+  });
+});
 
 export const update_driver = asyncHandler(async(req,res,next)=>{
       const driverId = req.params.driverId
